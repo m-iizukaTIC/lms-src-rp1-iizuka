@@ -262,9 +262,32 @@ public class StudentAttendanceService {
 	 * 
 	 * @param attendanceForm
 	 * @return 完了メッセージ
-	 * @throws ParseException
+	 * @throws ParseException、IllegalArgumentException
 	 */
 	public String update(AttendanceForm attendanceForm) throws ParseException {
+		
+		// チェック日(今日)の取得
+		Date today = dateUtil.parse(dateUtil.toString(new Date()));
+		// 未入力チェックループ
+		for (DailyAttendanceForm daily : attendanceForm.getAttendanceList()) {
+			// 研修日の取得
+			Date trainingDate = dateUtil.parse(daily.getTrainingDate());
+
+			// 研修日は過去日？
+			if (trainingDate.before(today)) {
+				
+				// 空欄か否かによってtrue、falseを入れる
+				boolean startEmpty = daily.getTrainingStartTime() == null
+						|| daily.getTrainingStartTime().isEmpty();
+				boolean endEmpty = daily.getTrainingEndTime() == null
+						|| daily.getTrainingEndTime().isEmpty();				
+				// もし過去日の勤怠に未入力があるなら
+				if (startEmpty || endEmpty) {
+					// エラーを投げる
+					throw new IllegalArgumentException("過去日の勤怠に未入力があります。");
+				}
+			}
+		}
 
 		Integer lmsUserId = loginUserUtil.isStudent() ? loginUserDto.getLmsUserId()
 				: attendanceForm.getLmsUserId();

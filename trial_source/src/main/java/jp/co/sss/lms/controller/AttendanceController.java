@@ -133,9 +133,25 @@ public class AttendanceController {
 	public String complete(AttendanceForm attendanceForm, Model model, BindingResult result)
 			throws ParseException {
 
-		// 更新
-		String message = studentAttendanceService.update(attendanceForm);
-		model.addAttribute("message", message);
+		// まず更新が可能か試す
+		try {
+			// 更新
+			String message = studentAttendanceService.update(attendanceForm);
+			model.addAttribute("message", message);
+	        
+			// Service側でエラーが出たら(=未入力があったら)
+	    } catch (IllegalArgumentException e) {
+	    	// エラーメッセージを記録
+	        model.addAttribute("error", e.getMessage());
+	        // 再表示のための一覧取得
+			List<AttendanceManagementDto> attendanceManagementDtoList = studentAttendanceService
+					.getAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId());
+			model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
+
+			// 直接入力画面に戻る
+			return "attendance/update";
+	    }
+		
 		// 一覧の再取得
 		List<AttendanceManagementDto> attendanceManagementDtoList = studentAttendanceService
 				.getAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId());
