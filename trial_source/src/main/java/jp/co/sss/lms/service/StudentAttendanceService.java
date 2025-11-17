@@ -265,6 +265,7 @@ public class StudentAttendanceService {
 	 * @throws ParseException、IllegalArgumentException
 	 */
 	public String update(AttendanceForm attendanceForm) throws ParseException {
+		/*
 		
 		// チェック日(今日)の取得
 		Date today = dateUtil.parse(dateUtil.toString(new Date()));
@@ -272,7 +273,7 @@ public class StudentAttendanceService {
 		for (DailyAttendanceForm daily : attendanceForm.getAttendanceList()) {
 			// 研修日の取得
 			Date trainingDate = dateUtil.parse(daily.getTrainingDate());
-
+		
 			// 研修日は過去日？
 			if (trainingDate.before(today)) {
 				
@@ -288,6 +289,8 @@ public class StudentAttendanceService {
 				}
 			}
 		}
+		
+		*/
 
 		Integer lmsUserId = loginUserUtil.isStudent() ? loginUserDto.getLmsUserId()
 				: attendanceForm.getLmsUserId();
