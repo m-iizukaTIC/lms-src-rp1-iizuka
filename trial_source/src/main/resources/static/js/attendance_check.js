@@ -2,7 +2,6 @@
  * 過去日の未入力チェック
  */
 
-document.querySelector('input[name="complete"]').addEventListener('click', function(e) {
 
 /*
 	// <tbody>内のすべての<tr>をリストで取得
@@ -30,8 +29,14 @@ document.querySelector('input[name="complete"]').addEventListener('click', funct
 		}
 	}
 	*/
+
+
+/**
+ * 更新確認
+ */
+document.querySelector('input[name="complete"]').addEventListener('click', function(e) {
 	
-	// 何も問題なかったら更新確認ダイアログを出す
+	// 更新確認ダイアログを出す
 	if (!confirm("更新します。よろしいですか？")) {
 		//キャンセル時に送信を止める
 		e.preventDefault(); 
