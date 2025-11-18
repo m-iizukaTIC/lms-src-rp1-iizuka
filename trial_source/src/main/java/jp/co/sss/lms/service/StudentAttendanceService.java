@@ -1,6 +1,7 @@
 package jp.co.sss.lms.service;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -265,8 +266,8 @@ public class StudentAttendanceService {
 	 * @throws ParseException、IllegalArgumentException
 	 */
 	public String update(AttendanceForm attendanceForm) throws ParseException {
-		/*
 		
+		/* Task.27で使えそうなので一時保存
 		// チェック日(今日)の取得
 		Date today = dateUtil.parse(dateUtil.toString(new Date()));
 		// 未入力チェックループ
@@ -359,5 +360,33 @@ public class StudentAttendanceService {
 		// 完了メッセージ
 		return messageUtil.getMessage(Constants.PROP_KEY_ATTENDANCE_UPDATE_NOTICE);
 	}
+	
+	// 飯塚麻美子 - Task.25
+	/**
+	 * 過去日の勤怠不備確認
+	 * 
+	 * @author 飯塚麻美子 - Task.25
+	 * @param courseId
+	 * @param lmsUserId
+	 * @param trainingDate
+	 * @return 勤怠不備の有無（true：あり、false：なし）
+	 */
+	public boolean getPastAttendanceManagement(Integer courseId, Integer lmsUserId, LocalDate trainingDate) {
 
+		// 過去日の勤怠管理リストの取得
+		List<AttendanceManagementDto> pastAttendanceList = tStudentAttendanceMapper
+				.getPastAttendanceByUserId(courseId, lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
+		// 勤怠登録漏れがあるか確認（デフォルト：false）
+		boolean hasPastError = false;
+		for(AttendanceManagementDto pastAttendance : pastAttendanceList) {
+			if(pastAttendance.getTrainingStartTime() == null
+					|| pastAttendance.getTrainingStartTime().isEmpty()
+					|| pastAttendance.getTrainingEndTime() == null
+					|| pastAttendance.getTrainingEndTime().isEmpty()) {
+				hasPastError = true;
+				break;
+			}
+		}	   
+		return hasPastError;
+	}
 }

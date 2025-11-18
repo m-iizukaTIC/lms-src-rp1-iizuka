@@ -86,4 +86,28 @@
 		WHERE student_attendance_id = #{studentAttendanceId}
 	</update>
 
+	<!-- 飯塚麻美子 - Task.25 -->
+	<select id="getPastAttendanceByUserId" resultType="jp.co.sss.lms.dto.AttendanceManagementDto">
+		SELECT
+			(cast(t2.date AS DATE) = current_date) AS is_today,
+			t2.section_name,
+			t3.student_attendance_id,
+			t3.lms_user_id,
+			t2.date AS
+			training_date,
+			t3.training_start_time,
+			t3.training_end_time,
+			t3.status,
+			t3.note,
+			t3.blank_time
+		FROM m_course t1
+			INNER JOIN m_section t2 ON t1.course_id = t2.course_id
+			LEFT OUTER JOIN t_student_attendance t3 ON t3.lms_user_id = #{lmsUserId} AND cast(t2.date AS DATE) = cast(t3.training_date AS DATE)
+		WHERE t1.course_id = #{courseId} 
+			AND t3.lms_user_id = #{lmsUserId} 
+			AND t1.delete_flg = #{deleteFlg}
+			AND t3.training_date &lt; #{trainingDate}
+		ORDER BY t2.date ASC
+	</select>
+
 </mapper>

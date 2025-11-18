@@ -1,6 +1,7 @@
 package jp.co.sss.lms.controller;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,12 @@ public class AttendanceController {
 				.getAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId());
 		model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
 
+		// 飯塚麻美子 - Task.25
+		// 過去日の勤怠不備確認
+		LocalDate trainingDate = LocalDate.now();
+		boolean hasPastError = studentAttendanceService
+				.getPastAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId(), trainingDate);
+		model.addAttribute("hasPastError", hasPastError);
 		return "attendance/detail";
 	}
 
@@ -133,8 +140,7 @@ public class AttendanceController {
 	public String complete(AttendanceForm attendanceForm, Model model, BindingResult result)
 			throws ParseException {
 
-		/*
-		
+		/* Task.27で使えそうなので一時保存
 		// まず更新が可能か試す
 		try {
 			// 更新
@@ -165,6 +171,13 @@ public class AttendanceController {
 				.getAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId());
 		model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
 
+		// 飯塚麻美子 - Task.25
+		// 過去日の勤怠不備確認
+		LocalDate trainingDate = LocalDate.now();
+		boolean hasPastError = studentAttendanceService
+				.getPastAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId(), trainingDate);
+		model.addAttribute("hasPastError", hasPastError);
+		
 		return "attendance/detail";
 	}
 
