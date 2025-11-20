@@ -1,7 +1,6 @@
 package jp.co.sss.lms.service;
 
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -334,31 +333,16 @@ public class StudentAttendanceService {
 		return messageUtil.getMessage(Constants.PROP_KEY_ATTENDANCE_UPDATE_NOTICE);
 	}
 
-	// 飯塚麻美子 - Task.25
 	/**
 	 * 過去日の勤怠不備確認
 	 * 
 	 * @author 飯塚麻美子 - Task.25
 	 * @param lmsUserId
 	 * @param trainingDate
-	 * @return 勤怠不備の有無（true：あり、false：なし）
+	 * @return 過去勤怠の未入力数
 	 */
-	public boolean getPastAttendanceManagement(Integer lmsUserId, LocalDate trainingDate) {
-
-		// 過去日の勤怠管理リストの取得
-		List<TStudentAttendance> pastAttendanceList = tStudentAttendanceMapper
-				.getPastAttendanceByUserId(lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
-		// 勤怠登録漏れがあるか確認（デフォルト：false）
-		boolean hasPastError = false;
-		for (TStudentAttendance pastAttendance : pastAttendanceList) {
-			if (pastAttendance.getTrainingStartTime() == null
-					|| pastAttendance.getTrainingStartTime().isEmpty()
-					|| pastAttendance.getTrainingEndTime() == null
-					|| pastAttendance.getTrainingEndTime().isEmpty()) {
-				hasPastError = true;
-				break;
-			}
-		}
-		return hasPastError;
+	public Integer getPastAttendanceManagement(Integer lmsUserId, Date trainingDate) {
+		// 過去勤怠の未入力数をカウントして返す
+		return tStudentAttendanceMapper.notEnterCount(lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
 	}
 }

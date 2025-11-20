@@ -1,7 +1,7 @@
 package jp.co.sss.lms.controller;
 
 import java.text.ParseException;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import jp.co.sss.lms.dto.AttendanceManagementDto;
 import jp.co.sss.lms.dto.LoginUserDto;
 import jp.co.sss.lms.form.AttendanceForm;
 import jp.co.sss.lms.service.StudentAttendanceService;
+import jp.co.sss.lms.util.AttendanceUtil;
 import jp.co.sss.lms.util.Constants;
 
 /**
@@ -30,6 +31,9 @@ public class AttendanceController {
 	private StudentAttendanceService studentAttendanceService;
 	@Autowired
 	private LoginUserDto loginUserDto;
+	// 飯塚麻美子 - Task.25
+	@Autowired
+	private AttendanceUtil attendanceUtil;
 
 	/**
 	 * 勤怠管理画面 初期表示
@@ -49,10 +53,20 @@ public class AttendanceController {
 		model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
 
 		// 飯塚麻美子 - Task.25
-		// 過去日の勤怠不備確認
-		LocalDate trainingDate = LocalDate.now();
-		boolean hasPastError = studentAttendanceService
+		// 今日の日付取得
+		Date trainingDate = attendanceUtil.getTrainingDate();
+		// 過去勤怠の未入力数をカウント
+		Integer checkPastError = studentAttendanceService
 				.getPastAttendanceManagement(loginUserDto.getLmsUserId(), trainingDate);
+		// 識別用boolean
+		boolean hasPastError;
+		// 取得した未入力カウント数が0より大きい場合true
+		if(checkPastError != 0) {
+			hasPastError = true;
+			// それ以外はfalse
+		}else {
+			hasPastError = false;
+		}
 		model.addAttribute("hasPastError", hasPastError);
 		return "attendance/detail";
 	}
@@ -147,14 +161,6 @@ public class AttendanceController {
 		List<AttendanceManagementDto> attendanceManagementDtoList = studentAttendanceService
 				.getAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId());
 		model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
-
-		// 飯塚麻美子 - Task.25
-		// 過去日の勤怠不備確認
-		LocalDate trainingDate = LocalDate.now();
-		boolean hasPastError = studentAttendanceService
-				.getPastAttendanceManagement(loginUserDto.getLmsUserId(), trainingDate);
-		model.addAttribute("hasPastError", hasPastError);
-
 		return "attendance/detail";
 	}
 
