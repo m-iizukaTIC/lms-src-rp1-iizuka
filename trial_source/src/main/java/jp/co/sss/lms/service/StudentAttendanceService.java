@@ -266,33 +266,6 @@ public class StudentAttendanceService {
 	 * @throws ParseException、IllegalArgumentException
 	 */
 	public String update(AttendanceForm attendanceForm) throws ParseException {
-		
-		/* Task.27で使えそうなので一時保存
-		// チェック日(今日)の取得
-		Date today = dateUtil.parse(dateUtil.toString(new Date()));
-		// 未入力チェックループ
-		for (DailyAttendanceForm daily : attendanceForm.getAttendanceList()) {
-			// 研修日の取得
-			Date trainingDate = dateUtil.parse(daily.getTrainingDate());
-		
-			// 研修日は過去日？
-			if (trainingDate.before(today)) {
-				
-				// 空欄か否かによってtrue、falseを入れる
-				boolean startEmpty = daily.getTrainingStartTime() == null
-						|| daily.getTrainingStartTime().isEmpty();
-				boolean endEmpty = daily.getTrainingEndTime() == null
-						|| daily.getTrainingEndTime().isEmpty();				
-				// もし過去日の勤怠に未入力があるなら
-				if (startEmpty || endEmpty) {
-					// エラーを投げる
-					throw new IllegalArgumentException("過去日の勤怠に未入力があります。");
-				}
-			}
-		}
-		
-		*/
-
 		Integer lmsUserId = loginUserUtil.isStudent() ? loginUserDto.getLmsUserId()
 				: attendanceForm.getLmsUserId();
 
@@ -360,33 +333,32 @@ public class StudentAttendanceService {
 		// 完了メッセージ
 		return messageUtil.getMessage(Constants.PROP_KEY_ATTENDANCE_UPDATE_NOTICE);
 	}
-	
+
 	// 飯塚麻美子 - Task.25
 	/**
 	 * 過去日の勤怠不備確認
 	 * 
 	 * @author 飯塚麻美子 - Task.25
-	 * @param courseId
 	 * @param lmsUserId
 	 * @param trainingDate
 	 * @return 勤怠不備の有無（true：あり、false：なし）
 	 */
-	public boolean getPastAttendanceManagement(Integer courseId, Integer lmsUserId, LocalDate trainingDate) {
+	public boolean getPastAttendanceManagement(Integer lmsUserId, LocalDate trainingDate) {
 
 		// 過去日の勤怠管理リストの取得
-		List<AttendanceManagementDto> pastAttendanceList = tStudentAttendanceMapper
-				.getPastAttendanceByUserId(courseId, lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
+		List<TStudentAttendance> pastAttendanceList = tStudentAttendanceMapper
+				.getPastAttendanceByUserId(lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
 		// 勤怠登録漏れがあるか確認（デフォルト：false）
 		boolean hasPastError = false;
-		for(AttendanceManagementDto pastAttendance : pastAttendanceList) {
-			if(pastAttendance.getTrainingStartTime() == null
+		for (TStudentAttendance pastAttendance : pastAttendanceList) {
+			if (pastAttendance.getTrainingStartTime() == null
 					|| pastAttendance.getTrainingStartTime().isEmpty()
 					|| pastAttendance.getTrainingEndTime() == null
 					|| pastAttendance.getTrainingEndTime().isEmpty()) {
 				hasPastError = true;
 				break;
 			}
-		}	   
+		}
 		return hasPastError;
 	}
 }

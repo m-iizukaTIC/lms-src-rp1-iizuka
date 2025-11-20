@@ -52,7 +52,7 @@ public class AttendanceController {
 		// 過去日の勤怠不備確認
 		LocalDate trainingDate = LocalDate.now();
 		boolean hasPastError = studentAttendanceService
-				.getPastAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId(), trainingDate);
+				.getPastAttendanceManagement(loginUserDto.getLmsUserId(), trainingDate);
 		model.addAttribute("hasPastError", hasPastError);
 		return "attendance/detail";
 	}
@@ -139,29 +139,6 @@ public class AttendanceController {
 	@RequestMapping(path = "/update", params = "complete", method = RequestMethod.POST)
 	public String complete(AttendanceForm attendanceForm, Model model, BindingResult result)
 			throws ParseException {
-
-		/* Task.27で使えそうなので一時保存
-		// まず更新が可能か試す
-		try {
-			// 更新
-			String message = studentAttendanceService.update(attendanceForm);
-			model.addAttribute("message", message);
-		    
-			// Service側でエラーが出たら(=未入力があったら)
-		} catch (IllegalArgumentException e) {
-			// エラーメッセージを記録
-		    model.addAttribute("error", e.getMessage());
-		    // 再表示のための一覧取得
-			List<AttendanceManagementDto> attendanceManagementDtoList = studentAttendanceService
-					.getAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId());
-			model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
-		
-			// 直接入力画面に戻る
-			return "attendance/update";
-		}
-		
-		*/
-
 		// 更新
 		String message = studentAttendanceService.update(attendanceForm);
 		model.addAttribute("message", message);
@@ -175,9 +152,9 @@ public class AttendanceController {
 		// 過去日の勤怠不備確認
 		LocalDate trainingDate = LocalDate.now();
 		boolean hasPastError = studentAttendanceService
-				.getPastAttendanceManagement(loginUserDto.getCourseId(), loginUserDto.getLmsUserId(), trainingDate);
+				.getPastAttendanceManagement(loginUserDto.getLmsUserId(), trainingDate);
 		model.addAttribute("hasPastError", hasPastError);
-		
+
 		return "attendance/detail";
 	}
 

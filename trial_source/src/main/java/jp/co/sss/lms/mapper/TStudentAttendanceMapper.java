@@ -71,14 +71,12 @@ public interface TStudentAttendanceMapper {
 	 * 過去日の勤怠情報（受講生入力）取得（LMSユーザーID）
 	 * 
 	 * @author 飯塚麻美子 - Task.25
-	 * @param courseId
 	 * @param lmsUserId
 	 * @param deleteFlg
 	 * @param trainingDate
 	 * @return 過去日の勤怠情報DTOリスト
 	 */
-	List<AttendanceManagementDto> getPastAttendanceByUserId(
-			@Param("courseId") Integer courseId, @Param("lmsUserId") Integer lmsUserId,
+	List<TStudentAttendance> getPastAttendanceByUserId(@Param("lmsUserId") Integer lmsUserId,
 			@Param("deleteFlg") Short deleteFlg, @Param("trainingDate") LocalDate trainingDate);
 
 }
