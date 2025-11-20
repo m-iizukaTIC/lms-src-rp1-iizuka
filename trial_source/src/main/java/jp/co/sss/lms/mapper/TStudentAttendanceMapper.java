@@ -67,13 +67,13 @@ public interface TStudentAttendanceMapper {
 
 	// 飯塚麻美子 - Task.25
 	/**
-	 * 過去日の勤怠情報（受講生入力）取得（LMSユーザーID）
+	 * 過去日の勤怠未入力カウント
 	 * 
 	 * @author 飯塚麻美子 - Task.25
 	 * @param lmsUserId
 	 * @param deleteFlg
 	 * @param trainingDate
-	 * @return 過去日の勤怠情報DTOリスト
+	 * @return 過去日の勤怠未入力件数
 	 */
 	Integer notEnterCount(@Param("lmsUserId") Integer lmsUserId,
 			@Param("deleteFlg") Short deleteFlg, @Param("trainingDate") Date trainingDate);
