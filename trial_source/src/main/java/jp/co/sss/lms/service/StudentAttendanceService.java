@@ -324,7 +324,7 @@ public class StudentAttendanceService {
 			} catch (IllegalArgumentException e) {
 				// エラーが起きた場合は何もしない
 			}
-			
+
 			// 中抜け時間
 			tStudentAttendance.setBlankTime(dailyAttendanceForm.getBlankTime());
 			// 遅刻早退ステータス
@@ -363,11 +363,24 @@ public class StudentAttendanceService {
 	 * 
 	 * @author 飯塚麻美子 - Task.25
 	 * @param lmsUserId
-	 * @param trainingDate
-	 * @return 過去勤怠の未入力数
+	 * @return 過去勤怠不備の有無(有：true、無：false)
 	 */
-	public Integer getPastAttendanceManagement(Integer lmsUserId, Date trainingDate) {
-		// 過去勤怠の未入力数をカウントして返す
-		return tStudentAttendanceMapper.notEnterCount(lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
+	public boolean getPastAttendanceManagement(Integer lmsUserId) {
+		// 今日の日付取得
+		Date trainingDate = attendanceUtil.getTrainingDate();
+		// 過去勤怠の未入力数をカウント
+		Integer checkPastError = tStudentAttendanceMapper.notEnterCount(
+				lmsUserId, Constants.DB_FLG_FALSE, trainingDate);
+		// 識別用boolean
+		boolean hasPastError;
+		// 取得した未入力カウント数が0より大きい場合true
+		if (checkPastError > 0) {
+			hasPastError = true;
+			// それ以外はfalse
+		} else {
+			hasPastError = false;
+		}
+		// 過去勤怠の未入力数をカウントする
+		return hasPastError;
 	}
 }

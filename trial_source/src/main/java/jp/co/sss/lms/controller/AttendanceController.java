@@ -1,7 +1,6 @@
 package jp.co.sss.lms.controller;
 
 import java.text.ParseException;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -54,20 +53,7 @@ public class AttendanceController {
 		model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
 
 		// 飯塚麻美子 - Task.25
-		// 今日の日付取得
-		Date trainingDate = attendanceUtil.getTrainingDate();
-		// 過去勤怠の未入力数をカウント
-		Integer checkPastError = studentAttendanceService
-				.getPastAttendanceManagement(loginUserDto.getLmsUserId(), trainingDate);
-		// 識別用boolean
-		boolean hasPastError;
-		// 取得した未入力カウント数が0より大きい場合true
-		if(checkPastError != 0) {
-			hasPastError = true;
-			// それ以外はfalse
-		}else {
-			hasPastError = false;
-		}
+		boolean hasPastError = studentAttendanceService.getPastAttendanceManagement(loginUserDto.getLmsUserId());
 		model.addAttribute("hasPastError", hasPastError);
 		return "attendance/detail";
 	}
