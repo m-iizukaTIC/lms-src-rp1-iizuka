@@ -313,7 +313,8 @@ public class StudentAttendanceService {
 						dailyAttendanceForm.getTrainingStartMinute());
 				tStudentAttendance.setTrainingStartTime(trainingStartTime.getFormattedString());
 			} catch (IllegalArgumentException e) {
-				// エラーが起きた場合は何もしない
+				// エラーが起きた場合は空欄を入れる
+				tStudentAttendance.setTrainingStartTime("");
 			}
 			// 退勤時刻整形
 			TrainingTime trainingEndTime = null;
@@ -322,7 +323,8 @@ public class StudentAttendanceService {
 						dailyAttendanceForm.getTrainingEndMinute());
 				tStudentAttendance.setTrainingEndTime(trainingEndTime.getFormattedString());
 			} catch (IllegalArgumentException e) {
-				// エラーが起きた場合は何もしない
+				// エラーが起きた場合は空欄を入れる
+				tStudentAttendance.setTrainingEndTime("");
 			}
 
 			// 中抜け時間
