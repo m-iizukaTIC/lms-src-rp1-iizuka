@@ -147,4 +147,65 @@ public class AttendanceUtil {
 		return false;
 	}
 
+	/**
+	 * 時間のプルダウンマップを生成
+	 * 
+	 * @author 飯塚麻美子 - Task.26
+	 * @return 1時間刻みの時間(数値)マップ
+	 */
+	public LinkedHashMap<Integer, String> getHourMap() {
+		LinkedHashMap<Integer, String> hours = new LinkedHashMap<>();
+		for(int i = 0; i < 24 ; i++) {
+			hours.put(i,String.format("%02d", i));
+		}
+		return hours;
+	}
+
+	/**
+	 * 分のプルダウンマップを生成
+	 * 
+	 * @author 飯塚麻美子 - Task.26
+	 * @return 1分刻みの分(数値)マップ
+	 */
+	public LinkedHashMap<Integer, String> getMinuteMap(){
+		LinkedHashMap<Integer, String> minutes = new LinkedHashMap<>();
+		for(int i = 0; i < 60 ; i++) {
+			minutes.put(i, String.format("%02d", i));
+		}
+		return minutes;
+	}
+	
+	/**
+	 * 時間(時)の切り出し
+	 * 
+	 * @author 飯塚麻美子 - Task.26
+	 * @param trainingTime
+	 * @return 出退勤時間(時間)
+	 */
+	public Integer getHour(String trainingTime) {
+		Integer hour = null;
+		try {
+			hour = Integer.parseInt(trainingTime.substring(0,2));
+			return hour;
+		}catch(NumberFormatException | StringIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * 時間(分)の切り出し
+	 * 
+	 * @author 飯塚麻美子 - Task.26
+	 * @param trainingTime
+	 * @return 出退勤時間(分)
+	 */
+	public Integer getMinute(String trainingTime) {
+		Integer minute = null;
+		try {
+			minute = Integer.parseInt(trainingTime.substring(trainingTime.length() - 2));
+			return minute;
+		}catch(NumberFormatException | StringIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
 }
