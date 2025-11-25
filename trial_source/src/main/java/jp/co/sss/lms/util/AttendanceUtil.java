@@ -1,8 +1,10 @@
 package jp.co.sss.lms.util;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -207,5 +209,44 @@ public class AttendanceUtil {
 		}catch(NumberFormatException | StringIndexOutOfBoundsException e) {
 			return null;
 		}
+	}
+	
+	/**
+	 * 受講時間数を算出
+	 * 
+	 * @author 飯塚麻美子 - Task.27
+	 * @param startTime
+	 * @param endTime
+	 * @return 受講トータル時間
+	 */
+	public TrainingTime calcJukoTime(TrainingTime startTime,  TrainingTime endTime) {
+		TrainingTime jukoTime = new TrainingTime();
+		return jukoTime;
+	}
+	
+	/**
+	 * 中抜け時間(文字列)を数字に変換
+	 * 
+	 * @author 飯塚麻美子 - Task.27
+	 * @param blankTime
+	 * @return 中抜け時間
+	 */
+	public Integer reverseBlankTime(String blankTime) {
+
+		Integer blank = 0;
+		return blank;
+	}
+	/**
+	 * プルダウン初期表示用の中抜け時間を返却
+	 * 
+	 * @author 飯塚麻美子 - Task.27
+	 * @param blankTime
+	 * @return 中抜け時間（〇〇時〇〇分の文字列）
+	 */
+	public String convertBlankTime(Integer blankTime) {
+		LinkedHashMap<Integer, String> blankTimeList = setBlankTime();
+		List<String> blankTimes = new ArrayList<>(blankTimeList.values());
+		String blank = blankTimes.get(blankTime);
+		return blank;
 	}
 }
