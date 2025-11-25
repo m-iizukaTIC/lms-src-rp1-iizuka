@@ -1,10 +1,8 @@
 package jp.co.sss.lms.util;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -157,8 +155,8 @@ public class AttendanceUtil {
 	 */
 	public LinkedHashMap<Integer, String> getHourMap() {
 		LinkedHashMap<Integer, String> hours = new LinkedHashMap<>();
-		for(int i = 0; i < 24 ; i++) {
-			hours.put(i,String.format("%02d", i));
+		for (int i = 0; i < 24; i++) {
+			hours.put(i, String.format("%02d", i));
 		}
 		return hours;
 	}
@@ -169,14 +167,14 @@ public class AttendanceUtil {
 	 * @author 飯塚麻美子 - Task.26
 	 * @return 1分刻みの分(数値)マップ
 	 */
-	public LinkedHashMap<Integer, String> getMinuteMap(){
+	public LinkedHashMap<Integer, String> getMinuteMap() {
 		LinkedHashMap<Integer, String> minutes = new LinkedHashMap<>();
-		for(int i = 0; i < 60 ; i++) {
+		for (int i = 0; i < 60; i++) {
 			minutes.put(i, String.format("%02d", i));
 		}
 		return minutes;
 	}
-	
+
 	/**
 	 * 時間(時)の切り出し
 	 * 
@@ -187,13 +185,13 @@ public class AttendanceUtil {
 	public Integer getHour(String trainingTime) {
 		Integer hour = null;
 		try {
-			hour = Integer.parseInt(trainingTime.substring(0,2));
+			hour = Integer.parseInt(trainingTime.substring(0, 2));
 			return hour;
-		}catch(NumberFormatException | StringIndexOutOfBoundsException e) {
+		} catch (NumberFormatException | StringIndexOutOfBoundsException e) {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 時間(分)の切り出し
 	 * 
@@ -206,11 +204,11 @@ public class AttendanceUtil {
 		try {
 			minute = Integer.parseInt(trainingTime.substring(trainingTime.length() - 2));
 			return minute;
-		}catch(NumberFormatException | StringIndexOutOfBoundsException e) {
+		} catch (NumberFormatException | StringIndexOutOfBoundsException e) {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 受講時間数を算出
 	 * 
@@ -219,11 +217,16 @@ public class AttendanceUtil {
 	 * @param endTime
 	 * @return 受講トータル時間
 	 */
-	public TrainingTime calcJukoTime(TrainingTime startTime,  TrainingTime endTime) {
-		TrainingTime jukoTime = new TrainingTime();
+	public TrainingTime calcJukoTime(TrainingTime startTime, TrainingTime endTime) {
+		TrainingTime jukoTime = endTime;
+		try {
+			jukoTime.subtract(startTime);
+		} catch (UnsupportedOperationException e) {
+			throw new UnsupportedOperationException("未実装");
+		}
 		return jukoTime;
 	}
-	
+
 	/**
 	 * 中抜け時間(文字列)を数字に変換
 	 * 
@@ -232,10 +235,25 @@ public class AttendanceUtil {
 	 * @return 中抜け時間
 	 */
 	public Integer reverseBlankTime(String blankTime) {
-
 		Integer blank = 0;
+		if (blankTime.indexOf("時間") != -1) {
+			String blankHourString = blankTime.substring(0, blankTime.indexOf("時間"));
+			Integer blankHour = Integer.parseInt(blankHourString);
+			blank = blank + blankHour * 60;
+		}
+		if (blankTime.indexOf("分") != -1) {
+			Integer minuteStart = 0;
+			if (blankTime.indexOf("時間") != -1) {
+				minuteStart = blankTime.indexOf("時間") + 2;
+			} else {
+				minuteStart = 0;
+			}
+			String minuteString = blankTime.substring(minuteStart, blankTime.indexOf("分"));
+			blank = blank + Integer.parseInt(minuteString);
+		}
 		return blank;
 	}
+
 	/**
 	 * プルダウン初期表示用の中抜け時間を返却
 	 * 
@@ -245,8 +263,7 @@ public class AttendanceUtil {
 	 */
 	public String convertBlankTime(Integer blankTime) {
 		LinkedHashMap<Integer, String> blankTimeList = setBlankTime();
-		List<String> blankTimes = new ArrayList<>(blankTimeList.values());
-		String blank = blankTimes.get(blankTime);
+		String blank = blankTimeList.get(blankTime);
 		return blank;
 	}
 }

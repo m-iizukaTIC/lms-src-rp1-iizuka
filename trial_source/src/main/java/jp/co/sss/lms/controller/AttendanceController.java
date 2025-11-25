@@ -149,8 +149,13 @@ public class AttendanceController {
 	public String complete(AttendanceForm attendanceForm, Model model, BindingResult result)
 			throws ParseException {
 		// 更新
+		try {
 		String message = studentAttendanceService.update(attendanceForm);
 		model.addAttribute("message", message);
+		}catch(IllegalArgumentException e) {
+			String errorMessage = e.getMessage();
+			
+		}
 
 		// 一覧の再取得
 		List<AttendanceManagementDto> attendanceManagementDtoList = studentAttendanceService

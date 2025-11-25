@@ -284,10 +284,22 @@ public class StudentAttendanceService {
 		List<TStudentAttendance> tStudentAttendanceList = tStudentAttendanceMapper
 				.findByLmsUserId(lmsUserId, Constants.DB_FLG_FALSE);
 
+		// 飯塚麻美子 -Task.27
+		// エラーチェック用のStringリストとエラーメッセージ一覧
+		List<String> check = new ArrayList<>();
+		List<String> errors = new ArrayList<>();
+		// 「出勤時間」「退勤時間」の文字列
+		String[] startTime = new String[] { "出勤時間" };
+		String[] endTime = new String[] { "退勤時間" };
+		// エラーチェック用のカウント
+		Integer count = 0;
+
 		// 入力された情報を更新用のエンティティに移し替え
 		Date date = new Date();
 		for (DailyAttendanceForm dailyAttendanceForm : attendanceForm.getAttendanceList()) {
 
+			// 飯塚麻美子 - Task.27
+			count++;
 			// 更新用エンティティ作成
 			TStudentAttendance tStudentAttendance = new TStudentAttendance();
 			// 日次勤怠フォームから更新用のエンティティにコピー
@@ -313,9 +325,20 @@ public class StudentAttendanceService {
 						dailyAttendanceForm.getTrainingStartMinute());
 				tStudentAttendance.setTrainingStartTime(trainingStartTime.getFormattedString());
 			} catch (IllegalArgumentException e) {
-				// エラーが起きた場合は空欄を入れる
+
+				// 飯塚麻美子 -Task.27
+				// b：出勤時間(時)(分)の一方が入力あり、もう一方が入力なし
+				if (!(dailyAttendanceForm.getTrainingStartHour() == null
+						&& dailyAttendanceForm.getTrainingStartMinute() == null)
+						&& !check.stream().anyMatch(s -> s.contains("b"))) {
+					check.add("b");
+					String errorMessage = messageUtil.getMessage(Constants.INPUT_INVALID, startTime);
+					errors.add(errorMessage);
+				}
+				// 両方未入力の場合を考え空欄をセット
 				tStudentAttendance.setTrainingStartTime("");
 			}
+
 			// 退勤時刻整形
 			TrainingTime trainingEndTime = null;
 			try {
@@ -323,8 +346,19 @@ public class StudentAttendanceService {
 						dailyAttendanceForm.getTrainingEndMinute());
 				tStudentAttendance.setTrainingEndTime(trainingEndTime.getFormattedString());
 			} catch (IllegalArgumentException e) {
-				// エラーが起きた場合は空欄を入れる
-				tStudentAttendance.setTrainingEndTime("");
+				
+				// 飯塚麻美子 -Task.27
+				// c：退勤時間(時)(分)の一方が入力あり、もう一方が入力なし
+				if (!(dailyAttendanceForm.getTrainingEndHour() == null
+						&& dailyAttendanceForm.getTrainingEndMinute() == null)
+						&& !check.stream().anyMatch(s -> s.contains("c"))) {
+					check.add("c");
+					String errorMessage = messageUtil.getMessage(Constants.INPUT_INVALID, endTime);
+					errors.add(errorMessage);
+				}
+				// 両方未入力の場合を考え空欄をセット
+				tStudentAttendance.setTrainingStartTime("");
+
 			}
 
 			// 中抜け時間
@@ -338,6 +372,43 @@ public class StudentAttendanceService {
 			}
 			// 備考
 			tStudentAttendance.setNote(dailyAttendanceForm.getNote());
+
+			// 飯塚麻美子 -Task.27
+			// a：備考の文字数 ＞ 100
+			if (dailyAttendanceForm.getNote().length() > 100 && !check.stream().anyMatch(s -> s.contains("f"))) {
+				check.add("f");
+				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_BLANKTIMEERROR);
+				errors.add(errorMessage);
+			}
+			// d：出勤時間に入力なし ＆ 退勤時間に入力あり
+			if(trainingStartTime == null && trainingEndTime != null && !check.stream().anyMatch(s -> s.contains("d"))) {
+				check.add("d");
+			}
+			try {
+				// 勤務時間(出勤時間～退勤時間までの時間)
+				TrainingTime jukoTime = attendanceUtil.calcJukoTime(trainingStartTime, trainingEndTime);
+				Integer total = 0;
+				total = total + jukoTime.getHour() * 60;
+				total = total + jukoTime.getMinute();
+				// 中抜け時間
+				Integer blank = 0;
+				if (blank != null) {
+					blank = dailyAttendanceForm.getBlankTime();
+				}
+				// f：中抜け時間 ＞ 勤務時間(出勤時間～退勤時間までの時間)の場合
+				if (blank > total && !check.stream().anyMatch(s -> s.contains("f"))) {
+					check.add("f");
+					String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_BLANKTIMEERROR);
+					errors.add(errorMessage);
+				}
+				// e：出勤時間 ＞ 退勤時間
+			} catch (UnsupportedOperationException e) {
+				String[] countString = new String[] { Integer.toString(count) };
+				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_TRAININGTIMERANGE,
+						countString);
+				errors.add(errorMessage);
+			}
+
 			// 更新者と更新日時
 			tStudentAttendance.setLastModifiedUser(loginUserDto.getLmsUserId());
 			tStudentAttendance.setLastModifiedDate(date);
@@ -345,6 +416,10 @@ public class StudentAttendanceService {
 			tStudentAttendance.setDeleteFlg(Constants.DB_FLG_FALSE);
 			// 登録用Listへ追加
 			tStudentAttendanceList.add(tStudentAttendance);
+		}
+		if(!errors.isEmpty()) {
+			String errorMessages = String.join(";", errors);
+			throw new IllegalArgumentException(errorMessages);
 		}
 		// 登録・更新処理
 		for (TStudentAttendance tStudentAttendance : tStudentAttendanceList) {
@@ -385,4 +460,18 @@ public class StudentAttendanceService {
 		// 過去勤怠の未入力数をカウントする
 		return hasPastError;
 	}
+	
+	/**
+	 * エラーメッセージの内容を整理して返す
+	 * 
+	 * @author 飯塚麻美子 - Task.27
+	 * @param errorMessage
+	 * @return 整理されたエラーメッセージリスト
+	 */
+	
+	/*
+	 * String received = "apple;banana;orange";
+	 * List<String> list = Arrays.asList(received.split(";"));
+	 * 
+	 */
 }
