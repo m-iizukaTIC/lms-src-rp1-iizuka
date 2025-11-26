@@ -2,8 +2,12 @@ package jp.co.sss.lms.service;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,7 +292,8 @@ public class StudentAttendanceService {
 		// エラーチェック用のStringリストとエラーメッセージ一覧
 		List<String> check = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
-		// 「出勤時間」「退勤時間」の文字列
+		// 「備考」と「100」の文字列、「出勤時間」「退勤時間」の文字列
+		String[] maxLength = new String[] { "備考", "100" };
 		String[] startTime = new String[] { "出勤時間" };
 		String[] endTime = new String[] { "退勤時間" };
 		// エラーチェック用のカウント
@@ -346,7 +351,7 @@ public class StudentAttendanceService {
 						dailyAttendanceForm.getTrainingEndMinute());
 				tStudentAttendance.setTrainingEndTime(trainingEndTime.getFormattedString());
 			} catch (IllegalArgumentException e) {
-				
+
 				// 飯塚麻美子 -Task.27
 				// c：退勤時間(時)(分)の一方が入力あり、もう一方が入力なし
 				if (!(dailyAttendanceForm.getTrainingEndHour() == null
@@ -357,7 +362,7 @@ public class StudentAttendanceService {
 					errors.add(errorMessage);
 				}
 				// 両方未入力の場合を考え空欄をセット
-				tStudentAttendance.setTrainingStartTime("");
+				tStudentAttendance.setTrainingEndTime("");
 
 			}
 
@@ -376,39 +381,47 @@ public class StudentAttendanceService {
 			// 飯塚麻美子 -Task.27
 			// a：備考の文字数 ＞ 100
 			if (dailyAttendanceForm.getNote().length() > 100 && !check.stream().anyMatch(s -> s.contains("f"))) {
-				check.add("f");
-				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_BLANKTIMEERROR);
+				check.add("a");
+				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_MAXLENGTH, maxLength);
 				errors.add(errorMessage);
 			}
 			// d：出勤時間に入力なし ＆ 退勤時間に入力あり
-			if(trainingStartTime == null && trainingEndTime != null && !check.stream().anyMatch(s -> s.contains("d"))) {
+			if (trainingStartTime == null && trainingEndTime != null) {
 				check.add("d");
-			}
-			try {
-				// 勤務時間(出勤時間～退勤時間までの時間)
-				TrainingTime jukoTime = attendanceUtil.calcJukoTime(trainingStartTime, trainingEndTime);
-				Integer total = 0;
-				total = total + jukoTime.getHour() * 60;
-				total = total + jukoTime.getMinute();
-				// 中抜け時間
-				Integer blank = 0;
-				if (blank != null) {
-					blank = dailyAttendanceForm.getBlankTime();
-				}
-				// f：中抜け時間 ＞ 勤務時間(出勤時間～退勤時間までの時間)の場合
-				if (blank > total && !check.stream().anyMatch(s -> s.contains("f"))) {
-					check.add("f");
-					String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_BLANKTIMEERROR);
-					errors.add(errorMessage);
-				}
-				// e：出勤時間 ＞ 退勤時間
-			} catch (UnsupportedOperationException e) {
-				String[] countString = new String[] { Integer.toString(count) };
-				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_TRAININGTIMERANGE,
-						countString);
+				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_PUNCHINEMPTY);
 				errors.add(errorMessage);
-			}
+			} else if (trainingStartTime != null && trainingEndTime != null) {
+				try {
 
+					// 勤務時間(出勤時間～退勤時間までの時間)
+					TrainingTime jukoTime = attendanceUtil.calcJukoTime(trainingStartTime, trainingEndTime);
+					Integer total = 0;
+					total = total + attendanceUtil.getHour(jukoTime.getFormattedString()) * 60;
+					total = total + attendanceUtil.getMinute(jukoTime.getFormattedString());
+					// 中抜け時間
+					Integer blank = 0;
+					if (dailyAttendanceForm.getBlankTime()!= null) {
+						blank = dailyAttendanceForm.getBlankTime();
+					}
+					System.out.println("blank = " + blank);
+					System.out.println("total = " + total);
+					// f：中抜け時間 ＞ 勤務時間(出勤時間～退勤時間までの時間)の場合
+					if (blank > total && !check.stream().anyMatch(s -> s.contains("f"))) {
+						check.add("f");
+						String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_BLANKTIMEERROR);
+						errors.add(errorMessage);
+					}
+					// e：退勤時間 ＞ 出勤時間
+				} catch (UnsupportedOperationException e) {
+					check.add("e");
+					String[] countString = new String[] { Integer.toString(count) };
+					String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_TRAININGTIMERANGE,
+							countString);
+					errors.add(errorMessage);
+					// 出勤・退勤ともに空欄の場合 → 特に何もしなくていい。
+				} catch (NullPointerException e) {
+				}
+			}
 			// 更新者と更新日時
 			tStudentAttendance.setLastModifiedUser(loginUserDto.getLmsUserId());
 			tStudentAttendance.setLastModifiedDate(date);
@@ -417,8 +430,19 @@ public class StudentAttendanceService {
 			// 登録用Listへ追加
 			tStudentAttendanceList.add(tStudentAttendance);
 		}
-		if(!errors.isEmpty()) {
-			String errorMessages = String.join(";", errors);
+		if (!errors.isEmpty()) {
+			// エラーメッセージの整頓
+			List<Map.Entry<String, String>> errorSort = new ArrayList<>();
+			for (int i = 0; i < check.size(); i++) {
+				errorSort.add(Map.entry(check.get(i), errors.get(i)));
+			}
+			errorSort.sort(Comparator.comparing(Map.Entry::getKey));
+			// 文字列化するためのList
+			List<String> errorList = new ArrayList<>();
+			for (Map.Entry<String, String> error : errorSort) {
+				errorList.add(error.getValue());
+			}
+			String errorMessages = String.join(";", errorList);
 			throw new IllegalArgumentException(errorMessages);
 		}
 		// 登録・更新処理
@@ -460,18 +484,34 @@ public class StudentAttendanceService {
 		// 過去勤怠の未入力数をカウントする
 		return hasPastError;
 	}
-	
+
 	/**
-	 * エラーメッセージの内容を整理して返す
+	 * 中抜け時間リストをFormにセット・選択して返す
+	 * 
+	 */
+	public AttendanceForm setupBlankTime(AttendanceForm attendanceForm) {
+
+		LinkedHashMap<Integer, String> blankTimes = attendanceUtil.setBlankTime();
+		attendanceForm.setBlankTimes(blankTimes);
+		for(DailyAttendanceForm dailyAttendanceForm : attendanceForm.getAttendanceList()) {
+			if(dailyAttendanceForm.getBlankTime() != null) {
+				dailyAttendanceForm.setBlankTimeValue(attendanceUtil.convertBlankTime(dailyAttendanceForm.getBlankTime()));;
+			}else {
+				dailyAttendanceForm.setBlankTime(null);
+			}
+		}		
+		return attendanceForm;
+	}
+
+	/**
+	 * エラーメッセージを連結した文字列をListにして返す
 	 * 
 	 * @author 飯塚麻美子 - Task.27
 	 * @param errorMessage
-	 * @return 整理されたエラーメッセージリスト
+	 * @return エラーメッセージリスト
 	 */
-	
-	/*
-	 * String received = "apple;banana;orange";
-	 * List<String> list = Arrays.asList(received.split(";"));
-	 * 
-	 */
+	public List<String> changeErrorMessageList(String errorMessage) {
+		List<String> errors = Arrays.asList(errorMessage.split(";"));
+		return errors;
+	}
 }

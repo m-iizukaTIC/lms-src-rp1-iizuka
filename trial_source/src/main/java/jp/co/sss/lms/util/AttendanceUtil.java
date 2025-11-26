@@ -218,13 +218,14 @@ public class AttendanceUtil {
 	 * @return 受講トータル時間
 	 */
 	public TrainingTime calcJukoTime(TrainingTime startTime, TrainingTime endTime) {
-		TrainingTime jukoTime = endTime;
 		try {
-			jukoTime.subtract(startTime);
+			TrainingTime jukoTime = endTime.subtract(startTime);
+			return jukoTime;
 		} catch (UnsupportedOperationException e) {
-			throw new UnsupportedOperationException("未実装");
+			throw new UnsupportedOperationException("算出不可");
+		} catch (NullPointerException e) {
+			throw new NullPointerException("NULL参照");
 		}
-		return jukoTime;
 	}
 
 	/**

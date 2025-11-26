@@ -154,7 +154,17 @@ public class AttendanceController {
 		model.addAttribute("message", message);
 		}catch(IllegalArgumentException e) {
 			String errorMessage = e.getMessage();
-			
+			List<String> errors = studentAttendanceService.changeErrorMessageList(errorMessage);
+			AttendanceForm returnForm = studentAttendanceService.setupBlankTime(attendanceForm);
+			model.addAttribute("attendanceForm", returnForm);
+			model.addAttribute("errors", errors);
+			// 表示用の時間Map作成
+			LinkedHashMap<Integer, String> hours = attendanceUtil.getHourMap();
+			model.addAttribute("hours", hours);
+			// 表示用の分Map作成
+			LinkedHashMap<Integer, String> minutes = attendanceUtil.getMinuteMap();
+			model.addAttribute("minutes", minutes);
+			return "attendance/update";
 		}
 
 		// 一覧の再取得
@@ -163,5 +173,5 @@ public class AttendanceController {
 		model.addAttribute("attendanceManagementDtoList", attendanceManagementDtoList);
 		return "attendance/detail";
 	}
-
+	
 }

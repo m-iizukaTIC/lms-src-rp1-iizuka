@@ -8,11 +8,18 @@
 </head>
 
 <body>
-	<!-- 飯塚麻美子 - Task.29 -->
 	<style>
+		/* 飯塚麻美子 - Task.29 */
 		.attendance-table-scroll {
 			height: 620px;
 			overflow-y: auto !important;
+		}
+		/* 飯塚麻美子 - Task.27 */
+		.error-list{
+			color: red;
+			list-style-type: none;
+			padding-left: 0;
+			margin:0;
 		}
 	</style>
 
@@ -26,6 +33,11 @@
 			<h2><small>途中退校日：${dispLeaveDate}</small></h2>
 		</th:block>
 	</th:block>
+
+	<!-- 飯塚麻美子 - task.27 -->
+	<ul th:if="${errors != null}" class="error-list">
+		<li th:each="error : ${errors}" th:text="${error}"></li>
+	</ul>
 
 	<div class="row">
 		<div class="bs-component col-sm-12">
