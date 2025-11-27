@@ -2,9 +2,9 @@ package jp.co.sss.lms.service;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -341,7 +341,10 @@ public class StudentAttendanceService {
 				if (!(dailyAttendanceForm.getTrainingStartHour() == null
 						&& dailyAttendanceForm.getTrainingStartMinute() == null)
 						&& !check.stream().anyMatch(s -> s.contains("b"))) {
-					check.add("b");
+					if(dailyAttendanceForm.getTrainingStartHour() == null)
+						check.add("bh" + (count-1));
+					if(dailyAttendanceForm.getTrainingStartMinute() == null)
+						check.add("bm" + (count-1));
 					String errorMessage = messageUtil.getMessage(Constants.INPUT_INVALID, startTime);
 					errors.add(errorMessage);
 				}
@@ -362,7 +365,10 @@ public class StudentAttendanceService {
 				if (!(dailyAttendanceForm.getTrainingEndHour() == null
 						&& dailyAttendanceForm.getTrainingEndMinute() == null)
 						&& !check.stream().anyMatch(s -> s.contains("c"))) {
-					check.add("c");
+					if(dailyAttendanceForm.getTrainingEndHour() == null)
+						check.add("ch" + (count-1));
+					if(dailyAttendanceForm.getTrainingEndMinute() == null)
+						check.add("cm" + (count-1));
 					String errorMessage = messageUtil.getMessage(Constants.INPUT_INVALID, endTime);
 					errors.add(errorMessage);
 				}
@@ -386,13 +392,13 @@ public class StudentAttendanceService {
 			// 飯塚麻美子 -Task.27
 			// a：備考の文字数 ＞ 100
 			if (dailyAttendanceForm.getNote().length() > 100 && !check.stream().anyMatch(s -> s.contains("f"))) {
-				check.add("a");
+				check.add("a" + (count - 1));
 				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_MAXLENGTH, maxLength);
 				errors.add(errorMessage);
 			}
 			// d：出勤時間に入力なし ＆ 退勤時間に入力あり
 			if (trainingStartTime == null && trainingEndTime != null) {
-				check.add("d");
+				check.add("d" + (count - 1));
 				String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_PUNCHINEMPTY);
 				errors.add(errorMessage);
 			} else if (trainingStartTime != null && trainingEndTime != null) {
@@ -412,13 +418,13 @@ public class StudentAttendanceService {
 					System.out.println("total = " + total);
 					// f：中抜け時間 ＞ 勤務時間(出勤時間～退勤時間までの時間)の場合
 					if (blank > total && !check.stream().anyMatch(s -> s.contains("f"))) {
-						check.add("f");
+						check.add("f" + (count - 1));
 						String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_BLANKTIMEERROR);
 						errors.add(errorMessage);
 					}
 					// e：退勤時間 ＞ 出勤時間
 				} catch (UnsupportedOperationException e) {
-					check.add("e");
+					check.add("e" + (count - 1));
 					String[] countString = new String[] { Integer.toString(count) };
 					String errorMessage = messageUtil.getMessage(Constants.VALID_KEY_ATTENDANCE_TRAININGTIMERANGE,
 							countString);
@@ -441,11 +447,13 @@ public class StudentAttendanceService {
 			for (int i = 0; i < check.size(); i++) {
 				errorSort.add(Map.entry(check.get(i), errors.get(i)));
 			}
-			errorSort.sort(Comparator.comparing(Map.Entry::getKey));
+			// 先頭1文字を基にソート
+			errorSort.sort(Comparator.comparing(e -> e.getKey().substring(0, 1)));
 			// 文字列化するためのList
 			List<String> errorList = new ArrayList<>();
 			for (Map.Entry<String, String> error : errorSort) {
-				errorList.add(error.getValue());
+				// エラーコード + 配列番号
+				errorList.add(error.getKey() + "_" + error.getValue());
 			}
 			String errorMessages = String.join(";", errorList);
 			throw new IllegalArgumentException(errorMessages);
@@ -491,10 +499,10 @@ public class StudentAttendanceService {
 	}
 
 	/**
-	 * 中抜け時間リストをFormにセット・選択して返す
+	 * プルダウンリストをFormにセット・選択して返す
 	 * 
 	 */
-	public AttendanceForm setupBlankTime(AttendanceForm attendanceForm) {
+	public AttendanceForm setPulldownList(AttendanceForm attendanceForm) {
 
 		// 飯塚麻美子 - Task.27
 		attendanceForm.setHour(attendanceUtil.getHourMap());
@@ -511,14 +519,22 @@ public class StudentAttendanceService {
 	}
 
 	/**
-	 * エラーメッセージを連結した文字列をListにして返す
+	 * エラーメッセージを連結した文字列をMapにして返す
 	 * 
 	 * @author 飯塚麻美子 - Task.27
 	 * @param errorMessage
-	 * @return エラーメッセージリスト
+	 * @return エラーメッセージマップ
 	 */
-	public List<String> changeErrorMessageList(String errorMessage) {
-		List<String> errors = Arrays.asList(errorMessage.split(";"));
+	public Map<String, String> changeErrorMessageList(String errorMessage) {
+		Map<String, String> errors = new HashMap<>();
+		String[] messages = errorMessage.split(";");
+		for(String message : messages) {
+			String[] keyValue = message.split("_");
+			// key + message ?
+			if(keyValue.length == 2) {
+				errors.put(keyValue[0], keyValue[1]);
+			}
+		}
 		return errors;
 	}
 }

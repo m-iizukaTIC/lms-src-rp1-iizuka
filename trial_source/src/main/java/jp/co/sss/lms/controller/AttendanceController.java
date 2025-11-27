@@ -1,7 +1,10 @@
 package jp.co.sss.lms.controller;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -124,6 +127,11 @@ public class AttendanceController {
 				.setAttendanceForm(attendanceManagementDtoList);
 		model.addAttribute("attendanceForm", attendanceForm);
 		
+		// 飯塚麻美子 - Task.27
+	    // リンク押下時→初期errors を空の Map として初期化
+	    Map<String, String> errors = new HashMap<>();
+	    model.addAttribute("errors", errors);
+		
 		return "attendance/update";
 	}
 
@@ -145,10 +153,15 @@ public class AttendanceController {
 		model.addAttribute("message", message);
 		}catch(IllegalArgumentException e) {
 			String errorMessage = e.getMessage();
-			List<String> errors = studentAttendanceService.changeErrorMessageList(errorMessage);
-			AttendanceForm returnForm = studentAttendanceService.setupBlankTime(attendanceForm);
+			// マップ型に戻す
+			Map<String, String> errors = studentAttendanceService.changeErrorMessageList(errorMessage);
+			AttendanceForm returnForm = studentAttendanceService.setPulldownList(attendanceForm);
+			// フォーム再設定(更新前状態)
 			model.addAttribute("attendanceForm", returnForm);
+			// 識別用エラーマップ
 			model.addAttribute("errors", errors);
+			// 見せる用のエラーメッセージ
+			model.addAttribute("errorMessage", new ArrayList<>(errors.values()));
 			return "attendance/update";
 		}
 

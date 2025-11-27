@@ -16,11 +16,20 @@
 		}
 		/* 飯塚麻美子 - Task.27 */
 		.error-list{
-			color: red;
+			color: #c53d43;
 			list-style-type: none;
 			padding-left: 0;
 			margin:0;
+			font-weight: bold
 		}
+		.error-list li::before{
+			content: "*";
+		}
+		.form-control.is-error {
+			border: 1px solid #ff0000 !important;
+			background-color:#f6bfbc;
+		}
+		
 	</style>
 
 	<th:block th:if="${session.loginUserDto.role == '0001'}">
@@ -35,8 +44,8 @@
 	</th:block>
 
 	<!-- 飯塚麻美子 - task.27 -->
-	<ul th:if="${errors != null}" class="error-list">
-		<li th:each="error : ${errors}" th:text="${error}"></li>
+	<ul th:if="${errorMessage != null}" class="error-list">
+		<li th:each="error : ${errorMessage}" th:text="${error}"></li>
 	</ul>
 
 	<div class="row">
@@ -77,48 +86,66 @@
 									<td class="w300">[[${dailyAttendanceForm.sectionName}]]</td>
 									
 									<!-- 飯塚麻美子 - Task.26 -->
+									<!-- 飯塚麻美子 - Task.27 -->
 									<td class="w80">
-										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingStartHour|">
+										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingStartHour|"
+										 th:classappend="${#maps.containsKey(errors, 'bh' + stat.index)
+														or #maps.containsKey(errors, 'd' + stat.index)
+														or #maps.containsKey(errors, 'e' + stat.index)
+														or #maps.containsKey(errors, 'f' + stat.index)} ? ' is-error' : ''">
 											<option value=""></option>
 											<option th:each="hour : ${attendanceForm.hour}"
 											 th:value="${hour.key}" th:text="${hour.value}"
-											th:selected="${hour.key == dailyAttendanceForm.trainingStartHour}">
+											 th:selected="${hour.key == dailyAttendanceForm.trainingStartHour}">
 											</option>
 										</select>
 									</td>
 									<td>:</td>
 									<td class="w80">
-										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingStartMinute|">
+										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingStartMinute|"
+										 th:classappend="${#maps.containsKey(errors, 'bm' + stat.index)
+														or #maps.containsKey(errors, 'd' + stat.index)
+														or #maps.containsKey(errors, 'e' + stat.index)
+														or #maps.containsKey(errors, 'f' + stat.index)} ? ' is-error' : ''">
 											<option value=""></option>
 											<option th:each="minute : ${attendanceForm.minute}"
 											 th:value="${minute.key}" th:text="${minute.value}"
-											th:selected="${minute.key == dailyAttendanceForm.trainingStartMinute}">
-											</option>
+											 th:selected="${minute.key == dailyAttendanceForm.trainingStartMinute}">
+											 </option>
 										</select>
 									</td>
 									<td class="w80">
-										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingEndHour|">
+										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingEndHour|"
+										 th:classappend="${#maps.containsKey(errors, 'ch' + stat.index)
+														or #maps.containsKey(errors, 'd' + stat.index)
+														or #maps.containsKey(errors, 'e' + stat.index)
+														or #maps.containsKey(errors, 'f' + stat.index)} ? ' is-error' : ''">
 											<option value=""></option>
 											<option th:each="hour : ${attendanceForm.hour}"
 											 th:value="${hour.key}" th:text="${hour.value}"
-											th:selected="${hour.key == dailyAttendanceForm.trainingEndHour}">
-											</option>
+											 th:selected="${hour.key == dailyAttendanceForm.trainingEndHour}">
+
+											 </option>
 										</select>
 									</td>
 									<td>:</td>
 									<td class="w80">
-										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingEndMinute|">
+										<select class="form-control" th:name="|attendanceList[${stat.index}].trainingEndMinute|"
+										 th:classappend="${#maps.containsKey(errors, 'cm' + stat.index)
+														or #maps.containsKey(errors, 'd' + stat.index)
+														or #maps.containsKey(errors, 'e' + stat.index)
+														or #maps.containsKey(errors, 'f' + stat.index)} ? ' is-error' : ''">
 											<option value=""></option>
 											<option th:each="minute : ${attendanceForm.minute}"
 											 th:value="${minute.key}" th:text="${minute.value}"
-											th:selected="${minute.key == dailyAttendanceForm.trainingEndMinute}">
-											</option>
+											 th:selected="${minute.key == dailyAttendanceForm.trainingEndMinute}">
+											 </option>
 										</select>
 									</td>
-									
 									<td class="w140">
 										<select th:name="|attendanceList[${stat.index}].blankTime|"
-											class="form-control">
+											class="form-control"
+											th:classappend="${#maps.containsKey(errors, 'f' + stat.index)} ? ' is-error' : ''">
 											<option th:each="blankTime : ${attendanceForm.blankTimes}"
 												th:value="${blankTime.key}" th:inlne="text" class="form-control"
 												th:selected="${blankTime.key == dailyAttendanceForm.blankTime}">
@@ -128,7 +155,8 @@
 									<td class="w80">[[${dailyAttendanceForm.statusDispName}]]</td>
 									<td class="w240">
 										<input type="text" th:name="|attendanceList[${stat.index}].note|"
-											th:value="${dailyAttendanceForm.note}" class="form-control"></input>
+											th:value="${dailyAttendanceForm.note}" class="form-control"
+											th:classappend="${#maps.containsKey(errors, 'a' + stat.index)} ? ' is-error' : ''" />
 									</td>
 								</tr>
 							</th:block>
