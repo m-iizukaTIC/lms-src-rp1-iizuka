@@ -1,7 +1,6 @@
 package jp.co.sss.lms.controller;
 
 import java.text.ParseException;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,14 +123,6 @@ public class AttendanceController {
 		AttendanceForm attendanceForm = studentAttendanceService
 				.setAttendanceForm(attendanceManagementDtoList);
 		model.addAttribute("attendanceForm", attendanceForm);
-
-		// 飯塚麻美子 - Task.26
-		// 表示用の時間Map作成
-		LinkedHashMap<Integer, String> hours = attendanceUtil.getHourMap();
-		model.addAttribute("hours", hours);
-		// 表示用の分Map作成
-		LinkedHashMap<Integer, String> minutes = attendanceUtil.getMinuteMap();
-		model.addAttribute("minutes", minutes);
 		
 		return "attendance/update";
 	}
@@ -158,12 +149,6 @@ public class AttendanceController {
 			AttendanceForm returnForm = studentAttendanceService.setupBlankTime(attendanceForm);
 			model.addAttribute("attendanceForm", returnForm);
 			model.addAttribute("errors", errors);
-			// 表示用の時間Map作成
-			LinkedHashMap<Integer, String> hours = attendanceUtil.getHourMap();
-			model.addAttribute("hours", hours);
-			// 表示用の分Map作成
-			LinkedHashMap<Integer, String> minutes = attendanceUtil.getMinuteMap();
-			model.addAttribute("minutes", minutes);
 			return "attendance/update";
 		}
 

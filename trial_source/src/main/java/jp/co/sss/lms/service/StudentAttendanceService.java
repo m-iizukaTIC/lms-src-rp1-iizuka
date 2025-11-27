@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +61,7 @@ public class StudentAttendanceService {
 		List<AttendanceManagementDto> attendanceManagementDtoList = tStudentAttendanceMapper
 				.getAttendanceManagement(courseId, lmsUserId, Constants.DB_FLG_FALSE);
 		for (AttendanceManagementDto dto : attendanceManagementDtoList) {
+			
 			// 中抜け時間を設定
 			if (dto.getBlankTime() != null) {
 				TrainingTime blankTime = attendanceUtil.calcBlankTime(dto.getBlankTime());
@@ -222,6 +222,10 @@ public class StudentAttendanceService {
 		attendanceForm.setLmsUserId(loginUserDto.getLmsUserId());
 		attendanceForm.setUserName(loginUserDto.getUserName());
 		attendanceForm.setLeaveFlg(loginUserDto.getLeaveFlg());
+
+		// 飯塚麻美子 - Task.26
+		attendanceForm.setHour(attendanceUtil.getHourMap());
+		attendanceForm.setMinute(attendanceUtil.getMinuteMap());
 		attendanceForm.setBlankTimes(attendanceUtil.setBlankTime());
 
 		// 途中退校している場合のみ設定
@@ -250,9 +254,10 @@ public class StudentAttendanceService {
 			if (attendanceManagementDto.getTrainingEndTime() != null)
 				dailyAttendanceForm.setTrainingEndHour(
 						attendanceUtil.getHour(attendanceManagementDto.getTrainingEndTime()));
-			if (attendanceManagementDto.getTrainingEndTime() != null)
+			if (attendanceManagementDto.getTrainingEndTime() != null) {
 				dailyAttendanceForm.setTrainingEndMinute(
 						attendanceUtil.getMinute(attendanceManagementDto.getTrainingEndTime()));
+			}
 
 			if (attendanceManagementDto.getBlankTime() != null) {
 				dailyAttendanceForm.setBlankTime(attendanceManagementDto.getBlankTime());
@@ -491,8 +496,10 @@ public class StudentAttendanceService {
 	 */
 	public AttendanceForm setupBlankTime(AttendanceForm attendanceForm) {
 
-		LinkedHashMap<Integer, String> blankTimes = attendanceUtil.setBlankTime();
-		attendanceForm.setBlankTimes(blankTimes);
+		// 飯塚麻美子 - Task.27
+		attendanceForm.setHour(attendanceUtil.getHourMap());
+		attendanceForm.setMinute(attendanceUtil.getMinuteMap());
+		attendanceForm.setBlankTimes(attendanceUtil.setBlankTime());
 		for(DailyAttendanceForm dailyAttendanceForm : attendanceForm.getAttendanceList()) {
 			if(dailyAttendanceForm.getBlankTime() != null) {
 				dailyAttendanceForm.setBlankTimeValue(attendanceUtil.convertBlankTime(dailyAttendanceForm.getBlankTime()));;
