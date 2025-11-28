@@ -28,7 +28,7 @@ public class AttendanceForm {
 	/** 退校日（表示用） */
 	private String dispLeaveDate;
 	
-	/** 飯塚麻美子 - Task.27 */
+	/** 飯塚麻美子 - Task.26 */
 	/** 出勤・退勤時間 - 時間(プルダウン) */
 	private LinkedHashMap<Integer, String> hour;
 	/** 出勤・退勤時間 - 分(プルダウン) */

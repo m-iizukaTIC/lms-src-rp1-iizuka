@@ -501,6 +501,9 @@ public class StudentAttendanceService {
 	/**
 	 * プルダウンリストをFormにセット・選択して返す
 	 * 
+	 * @author 飯塚麻美子 - Task.27
+	 * @param attendanceForm
+	 * @return プルダウンリストをセットしたForm
 	 */
 	public AttendanceForm setPulldownList(AttendanceForm attendanceForm) {
 

@@ -17,7 +17,6 @@ import jp.co.sss.lms.dto.AttendanceManagementDto;
 import jp.co.sss.lms.dto.LoginUserDto;
 import jp.co.sss.lms.form.AttendanceForm;
 import jp.co.sss.lms.service.StudentAttendanceService;
-import jp.co.sss.lms.util.AttendanceUtil;
 import jp.co.sss.lms.util.Constants;
 
 /**
@@ -33,9 +32,6 @@ public class AttendanceController {
 	private StudentAttendanceService studentAttendanceService;
 	@Autowired
 	private LoginUserDto loginUserDto;
-	// 飯塚麻美子 - Task.25
-	@Autowired
-	private AttendanceUtil attendanceUtil;
 
 	/**
 	 * 勤怠管理画面 初期表示
@@ -147,10 +143,11 @@ public class AttendanceController {
 	@RequestMapping(path = "/update", params = "complete", method = RequestMethod.POST)
 	public String complete(AttendanceForm attendanceForm, Model model, BindingResult result)
 			throws ParseException {
+		// 飯塚麻美子 - Task.27
 		// 更新
 		try {
-		String message = studentAttendanceService.update(attendanceForm);
-		model.addAttribute("message", message);
+			String message = studentAttendanceService.update(attendanceForm);
+			model.addAttribute("message", message);
 		}catch(IllegalArgumentException e) {
 			String errorMessage = e.getMessage();
 			// マップ型に戻す
